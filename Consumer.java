@@ -6,6 +6,7 @@ class Consumer extends Thread {
         super(String.format("consumer %02d", n));
         this.id = n;
         this.buffer = buffer;
+        System.out.println("start consumer " + n);
     }
 
     public void run() {

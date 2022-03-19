@@ -19,9 +19,15 @@ public class BoundedBufferMain {
         else
             buffer = new SemBoundedBuffer(Utils.bufferSize);
 
-        // Create producers and then consumers
-        // Create consumers
-
-// Create producers
+        int nConsumers = (int)Utils.nConsumers;
+        int nProducers = (int)Utils.nProducers;
+        for (int i=0;i<nConsumers;i++) {
+            Consumer consumer = new Consumer(i, buffer);
+            new Thread(consumer).start();
+        }
+        for (int i=nConsumers;i<nConsumers+nProducers;i++) {
+            Producer producer = new Producer(i-nConsumers, buffer);
+            new Thread(producer).start();
+        }
     }
 }

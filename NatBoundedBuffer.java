@@ -12,46 +12,42 @@ class NatBoundedBuffer extends BoundedBuffer {
     // Extract an element from buffer. If the attempted operation is
     // not possible immediately, the method call blocks until it is.
     Object get() {
-       Object value;
-
-       // Enter mutual exclusion
-            
-          // Wait until there is a full slot available.
-
-          // Signal or broadcast that an empty slot is available (if needed)
-
-          return super.get();
-
-          // Leave mutual exclusion
+      synchronized(this.content) {
+         while(size<=0) {
+            try{this.content.wait();}
+            catch(Exception e) {}
+         }
+         if(size<=maxSize) this.content.notifyAll();
+         return super.get();
+      }
     }
 
     // Insert an element into buffer. If the attempted operation is
     // not possible immedidately, the method call blocks until it is.
     boolean put(Object value) {
-        
-       // Enter mutual exclusion
-            
-          // Wait until there is a empty slot available.
-
-          // Signal or broadcast that a full slot is available (if needed)
-
-          super.put(value);
-
-          // Leave mutual exclusion
-       return true;
+      synchronized(this.content) {
+         while(size>=maxSize) {
+            try{this.content.wait();}
+            catch(Exception e) {}
+         }
+         super.put(value);
+         if(size>0) {this.content.notifyAll();}
+         return true;
+      }
     }
 
     // Extract an element from buffer. If the attempted operation is not
     // possible immedidately, return NULL. Otherwise, return the element.
     Object remove() {
-
-       // Enter mutual exclusion
-            
-          // Signal or broadcast that an empty slot is available (if needed)
-
-          return super.get();
-
-          // Leave mutual exclusion
+      synchronized(this.content) {
+         while(size<=0) {
+            try{this.content.wait();}
+            catch(Exception e) {}
+         }
+         size--;
+         if(size<maxSize) this.content.notifyAll();
+         return super.get();
+       }
     }
 
     // Insert an element into buffer. If the attempted operation is

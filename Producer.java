@@ -6,6 +6,7 @@ class Producer extends Thread {
         super(String.format("producer %02d", n + Utils.nConsumers));
         this.id = n + Utils.nConsumers;
         this.buffer = buffer;
+        System.out.println("start producer " + n);
     }
 
     public void run() {
