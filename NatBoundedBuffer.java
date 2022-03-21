@@ -11,57 +11,52 @@ class NatBoundedBuffer extends BoundedBuffer {
 
     // Extract an element from buffer. If the attempted operation is
     // not possible immediately, the method call blocks until it is.
-    Object get() {
-      synchronized(this.content) {
-         while(size<=0) {
-            try{this.content.wait();}
+    synchronized Object get() {
+         while(size==0) {
+            try{wait();}
             catch(Exception e) {}
          }
-         if(size<=maxSize) this.content.notifyAll();
+         if(size==maxSize) notifyAll();
          return super.get();
-      }
     }
 
     // Insert an element into buffer. If the attempted operation is
     // not possible immedidately, the method call blocks until it is.
-    boolean put(Object value) {
-      synchronized(this.content) {
-         while(size>=maxSize) {
-            try{this.content.wait();}
+    synchronized boolean put(Object value) {
+         while(size==maxSize) {
+            try{wait();}
             catch(Exception e) {}
          }
+         if(size==0) {notifyAll();}
          super.put(value);
-         if(size>0) {this.content.notifyAll();}
          return true;
-      }
     }
 
     // Extract an element from buffer. If the attempted operation is not
     // possible immedidately, return NULL. Otherwise, return the element.
     Object remove() {
       synchronized(this.content) {
-         while(size<=0) {
-            try{this.content.wait();}
-            catch(Exception e) {}
+         if(size<=0) return null;
+         else {
+            this.content.notify();
+            return super.get();
          }
-         size--;
-         if(size<maxSize) this.content.notifyAll();
-         return super.get();
        }
     }
 
     // Insert an element into buffer. If the attempted operation is
     // not possible immedidately, return 0. Otherwise, return 1.
     boolean add(Object value) {
-       boolean done;
-
-       // Enter mutual exclusion
-            
-          // Signal or broadcast that a full slot is available (if needed)
-
-          return super.put(value);
-
-          // Leave mutual exclusion
+      boolean done;
+      synchronized(this.content) {
+         if(size>=maxSize) done = false;
+         else {
+            done = true;
+            super.put(value);
+            this.content.notify();
+         }
+         return done;
+      }
     }
 
     // Extract an element from buffer. If the attempted operation is not
