@@ -34,29 +34,25 @@ class NatBoundedBuffer extends BoundedBuffer {
 
     // Extract an element from buffer. If the attempted operation is not
     // possible immedidately, return NULL. Otherwise, return the element.
-    Object remove() {
-      synchronized(this.content) {
-         if(size<=0) return null;
+    synchronized Object remove() {
+         if(size==0) return null;
          else {
-            this.content.notify();
+            notifyAll();
             return super.get();
          }
-       }
     }
 
     // Insert an element into buffer. If the attempted operation is
     // not possible immedidately, return 0. Otherwise, return 1.
-    boolean add(Object value) {
-      boolean done;
-      synchronized(this.content) {
-         if(size>=maxSize) done = false;
+    synchronized boolean add(Object value) {
+         boolean done;
+         if(size==maxSize) done = false;
          else {
             done = true;
             super.put(value);
-            this.content.notify();
+            notifyAll();
          }
          return done;
-      }
     }
 
     // Extract an element from buffer. If the attempted operation is not
